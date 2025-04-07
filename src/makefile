@@ -95,10 +95,9 @@ GIT = git
 
 commit:
 	@echo =================================================
-	$(eval COMMIT_HASH := $(shell $(GIT) log -1 --pretty=format:%h))
-	$(eval COMMIT_DATE := $(shell $(GIT) log -1 --format=%cd))
-	@if [ -n "$(COMMIT_HASH)" ] && [ -n "$(COMMIT_DATE)" ]; then \
-		echo "void print_git_commit(void);" >> $(COMMIT_H); \
+	@if $(GIT) log -1 > /dev/null 2>&1; then \
+		$(eval COMMIT_HASH := $(shell $(GIT) log -1 --pretty=format:%h)); \
+		$(eval COMMIT_DATE := $(shell $(GIT) log -1 --format=%cd)); \
 		echo "#define COMMIT \"$(COMMIT_HASH) ($(COMMIT_DATE))\"" >> $(COMMIT_H); \
 	else \
 		echo "#define COMMIT \"unknown\"" >> $(COMMIT_H); \
@@ -163,7 +162,6 @@ ifdef OS
 	del /s *.obj *.exp *.lib *.exe
 else
 	rm -f */*.o gpumd nep
-	sed -i '/void print_git_commit(void)/d' utilities/main_common.cuh
 	sed -i '/#define COMMIT/d' utilities/main_common.cuh
 endif
 
