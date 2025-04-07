@@ -35,6 +35,18 @@ void print_compile_information(void)
 #endif
 }
 
+void print_git_commit(void)
+{
+#ifdef COMMIT_INFO
+  const char* commit = COMMIT;
+#else
+    const char* commit = "unknown";
+#endif
+  print_line_1();
+  printf("Git commit information: %s\n\n", commit);
+  print_line_2();
+}
+
 void print_gpu_information(void)
 {
   print_line_1();

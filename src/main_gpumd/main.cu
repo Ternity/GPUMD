@@ -28,6 +28,7 @@ void print_welcome_information();
 int main(int argc, char* argv[])
 {
   print_welcome_information();
+  print_git_commit();
   print_compile_information();
   print_gpu_information();
 

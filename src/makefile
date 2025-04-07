@@ -21,7 +21,7 @@ CUDA_ARCH=-arch=sm_60
 ifdef OS # For Windows with the cl.exe compiler
 CFLAGS = -O3 $(CUDA_ARCH)
 else # For linux
-CFLAGS = -std=c++14 -O3 $(CUDA_ARCH)
+CFLAGS = -std=c++14 -O3 $(CUDA_ARCH) -DCOMMIT_INFO
 endif
 INC = -I./
 LDFLAGS = 
@@ -77,7 +77,7 @@ HEADERS =                         \
 ###########################################################
 # executables
 ###########################################################
-all: gpumd nep
+all: commit gpumd nep
 gpumd: $(OBJ_GPUMD)
 	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
 	@echo =================================================
@@ -89,6 +89,23 @@ nep: $(OBJ_NEP)
 	@echo The nep executable is successfully compiled!
 	@echo =================================================
 
+# Target to get commit hash and date and write to commit.h
+COMMIT_H = utilities/main_common.cuh
+GIT = git
+
+commit:
+	@echo =================================================
+	$(eval COMMIT_HASH := $(shell $(GIT) log -1 --pretty=format:%h))
+	$(eval COMMIT_DATE := $(shell $(GIT) log -1 --format=%cd))
+	@if [ -n "$(COMMIT_HASH)" ] && [ -n "$(COMMIT_DATE)" ]; then \
+		echo "void print_git_commit(void);" >> $(COMMIT_H); \
+		echo "#define COMMIT \"$(COMMIT_HASH) ($(COMMIT_DATE))\"" >> $(COMMIT_H); \
+	else \
+		echo "#define COMMIT \"unknown\"" >> $(COMMIT_H); \
+		echo "Failed to get git commit info"; \
+	fi
+	@echo Add commit hash and date to file $(COMMIT_H)
+	@echo =================================================
 
 ###########################################################
 # rules for building object files
@@ -146,5 +163,7 @@ ifdef OS
 	del /s *.obj *.exp *.lib *.exe
 else
 	rm -f */*.o gpumd nep
+	sed -i '/void print_git_commit(void)/d' utilities/main_common.cuh
+	sed -i '/#define COMMIT/d' utilities/main_common.cuh
 endif
 

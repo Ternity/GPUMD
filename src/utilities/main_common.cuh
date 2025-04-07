@@ -17,3 +17,5 @@
 
 void print_compile_information(void);
 void print_gpu_information(void);
+void print_git_commit(void);
+#define COMMIT "cc8e1690 (Sun Mar 30 20:17:15 2025 +0300)"
