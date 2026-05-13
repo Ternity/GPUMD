@@ -114,23 +114,21 @@ static __global__ void gpu_sort_neighbor_list(const int N, const int* NN, int* N
   int bid = blockIdx.x;
   int tid = threadIdx.x;
   int neighbor_number = NN[bid];
-  int atom_index;
   extern __shared__ int atom_index_copy[];
 
-  if (tid < neighbor_number) {
-    atom_index = NL[bid + tid * N];
-    atom_index_copy[tid] = atom_index;
+  for (int i = tid; i < neighbor_number; i += blockDim.x) {
+    atom_index_copy[i] = NL[bid + i * N];
   }
-  int count = 0;
   __syncthreads();
 
-  for (int j = 0; j < neighbor_number; ++j) {
-    if (atom_index > atom_index_copy[j]) {
-      count++;
+  for (int i = tid; i < neighbor_number; i += blockDim.x) {
+    int atom_index = atom_index_copy[i];
+    int count = 0;
+    for (int j = 0; j < neighbor_number; ++j) {
+      if (atom_index > atom_index_copy[j]) {
+        count++;
+      }
     }
-  }
-
-  if (tid < neighbor_number) {
     NL[bid + count * N] = atom_index;
   }
 }
